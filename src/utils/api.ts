@@ -1516,7 +1516,7 @@ IMPORTANT INSTRUCTIONS:
    - "Grade" refers to material grade (e.g., 304, 316, MS)
    - "Standard" refers to compliance standards (e.g., IS 2062, ASTM, EN)
    - "Quality" refers to quality level or class
-   - These are SEPARATE specifications and must be matched ONLY by exact or very similar names
+   - These are SEPARATE specifications and must be matched ONLY by exact or very similar names  
 3. Do not match one specification from one stage to multiple specifications from other stage, one specification should match with one specification only
 4. For each common specification:
    - Use the EXACT "spec_name" from Stage 1
