@@ -202,7 +202,7 @@ function App() {
 
   const handleDownloadCombinedExcel = () => {
     if (!isqs) return;
-    generateCombinedExcel(mcatName, auditResults, originalSpecs, isqs);
+    generateCombinedExcel(mcatName, auditResults, originalSpecs, isqs, commonSpecs);
   };
 
   return (
