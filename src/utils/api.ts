@@ -1625,35 +1625,71 @@ function parseCommonSpecsFromText(
 
   for (const line of lines) {
     // Skip header lines
-    if (line.toLowerCase().includes('specification') || line.includes('---') || line.includes('===')) {
+    if (line.toLowerCase().includes('specification') || 
+        line.toLowerCase().includes('stage 1 category') ||
+        line.includes('---') || 
+        line.includes('===') ||
+        line.includes('----')) {
+      console.log(`   Skipping header: "${line.substring(0, 40)}..."`);
       continue;
     }
 
     // Split by pipe |
-    const parts = line.split('|').map(p => p.trim()).filter(p => p.length > 0);
+    const parts = line.split('|').map(p => p.trim());
 
+    console.log(`   Parsing: "${line}"`);
+    console.log(`   Parts (${parts.length}):`, parts);
+
+    // Minimum 2 parts needed: spec name and something
     if (parts.length >= 2) {
       const specName = parts[0];
-      const category = parts.length > 2 ? parts[1] : 'Primary';
-      const optionsStr = parts.length > 2 ? parts[2] : parts[1];
-
-      // Find matching Stage 1 spec to get exact name and category
+      
+      // Find matching Stage 1 spec
       const stage1Match = stage1Specs.find(s =>
-        isSemanticallySimilar(s.spec_name, specName)
+        s.spec_name === specName || isSemanticallySimilar(s.spec_name, specName)
       );
 
-      if (stage1Match) {
-        const commonOptions = optionsStr
-          .split(',')
-          .map(opt => opt.trim())
-          .filter(opt => opt.length > 0 && !opt.toLowerCase().includes('no common'));
-
-        result.push({
-          spec_name: stage1Match.spec_name,
-          options: commonOptions,
-          category: stage1Match.tier || 'Primary'
-        });
+      if (!stage1Match) {
+        console.log(`   ⚠️ No Stage 1 match for: "${specName}"`);
+        continue;
       }
+
+      let category = stage1Match.tier || 'Primary';
+      let optionsStr = '';
+
+      // Handle different cases
+      if (parts.length === 2) {
+        // Format: "Spec Name | options" OR "Spec Name | Category"
+        const secondPart = parts[1].toLowerCase();
+        
+        if (['primary', 'secondary', 'tertiary'].includes(secondPart)) {
+          // It's a category
+          category = parts[1];
+          optionsStr = '';
+        } else {
+          // It's options
+          category = stage1Match.tier || 'Primary';
+          optionsStr = parts[1];
+        }
+      } 
+      else if (parts.length >= 3) {
+        // Format: "Spec Name | Category | Options"
+        category = parts[1];
+        optionsStr = parts[2];
+      }
+
+      console.log(`   Category: ${category}, Options: "${optionsStr}"`);
+
+      // Parse options
+      const optionsList = parseOptionsSimple(optionsStr);
+      
+      console.log(`   Options parsed:`, optionsList);
+      
+      result.push({
+        spec_name: stage1Match.spec_name,
+        options: optionsList.length > 0 ? optionsList : ["No common options available"],
+        category: category
+      });
     }
   }
 
@@ -1661,6 +1697,19 @@ function parseCommonSpecsFromText(
   return result;
 }
 
+// SIMPLE options parser
+function parseOptionsSimple(optionsStr: string): string[] {
+  if (!optionsStr || optionsStr.trim().length === 0) {
+    return [];
+  }
+
+  // Simple split by comma and trim
+  return optionsStr
+    .split(',')
+    .map(opt => opt.trim())
+    .filter(opt => opt.length > 0)
+    .filter(opt => !opt.toLowerCase().includes('no common options'));
+}
 // Helper 2: Local matching if Gemini fails
 function findCommonSpecsLocally(
   stage1Specs: { spec_name: string; options: string[]; tier?: string }[],
