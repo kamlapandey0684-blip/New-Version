@@ -101,7 +101,35 @@ function App() {
     }
   };
 
-  const handleRerunStage2 = async () => {
+  const handleRerunStage1 = async () => {
+    if (originalSpecs.length === 0) {
+      setError("No specifications found to rerun. Please go back to Stage 1.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setProcessingStage("Re-auditing specifications...");
+
+    try {
+      const auditData: AuditInputType = {
+        mcat_name: mcatName,
+        specifications: originalSpecs,
+      };
+
+      const results = await auditSpecificationsWithGemini(auditData);
+      setAuditResults(results);
+      setActiveTab("stage1");
+    } catch (err) {
+      setError(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setProcessingStage("");
+    }
+  };
+
+  const handleRerunStage2AndStage3 = async () => {
     if (urls.length === 0) {
       setError("No URLs found to rerun. Please go back to Stage 2.");
       return;
@@ -148,6 +176,38 @@ function App() {
         buyers: buyerISQs
       });
       setActiveTab("stage2");
+    } catch (err) {
+      setError(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setProcessingStage("");
+    }
+  };
+
+  const handleRerunStage3 = async () => {
+    if (!isqs || commonSpecs.length === 0) {
+      setError("No data found to rerun Stage 3. Please rerun Stage 2 first.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setProcessingStage("Regenerating buyer ISQs...");
+
+    try {
+      const buyerISQs = await generateBuyerISQsWithGemini(
+        commonSpecs,
+        originalSpecs
+      );
+
+      console.log("✅ Buyer ISQs regenerated:", buyerISQs);
+
+      setIsqs({
+        ...isqs,
+        buyers: buyerISQs
+      });
+      setActiveTab("stage3");
     } catch (err) {
       setError(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
       console.error(err);
@@ -262,21 +322,40 @@ function App() {
                     Complete audit and ISQ extraction for <strong>{mcatName}</strong>
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
                   <button
-                    onClick={handleRerunStage2}
+                    onClick={handleRerunStage1}
                     disabled={loading}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Rerun Stage 1: Audit specifications independently"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-semibold rounded-lg hover:from-amber-700 hover:to-amber-800 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                   >
-                    <RefreshCw size={20} />
-                    Rerun Stage 2
+                    <RefreshCw size={18} />
+                    Rerun Stage 1
+                  </button>
+                  <button
+                    onClick={handleRerunStage2AndStage3}
+                    disabled={loading}
+                    title="Rerun Stage 2: This will automatically rerun Stage 3 as well"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    <RefreshCw size={18} />
+                    Rerun Stage 2 + 3
+                  </button>
+                  <button
+                    onClick={handleRerunStage3}
+                    disabled={loading}
+                    title="Rerun Stage 3: Regenerate Buyer ISQs independently"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-lg hover:from-green-700 hover:to-green-800 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    <RefreshCw size={18} />
+                    Rerun Stage 3
                   </button>
                   <button
                     onClick={handleReset}
                     disabled={loading}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-semibold rounded-lg hover:from-gray-700 hover:to-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-semibold rounded-lg hover:from-gray-700 hover:to-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                   >
-                    <RefreshCw size={20} />
+                    <RefreshCw size={18} />
                     New Analysis
                   </button>
                 </div>
