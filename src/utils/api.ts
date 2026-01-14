@@ -1517,7 +1517,8 @@ IMPORTANT INSTRUCTIONS:
    - "Standard" refers to compliance standards (e.g., IS 2062, ASTM, EN)
    - "Quality" refers to quality level or class
    - These are SEPARATE specifications and must be matched ONLY by exact or very similar names
-3. For each common specification:
+3. Do not match one specification from one stage to multiple specifications from other stage, one specification should match with one specification only
+4. For each common specification:
    - Use the EXACT "spec_name" from Stage 1
    - Use the category from Stage 1 (Primary/Secondary)
    - Find ALL common options between the two stages
@@ -1525,8 +1526,8 @@ IMPORTANT INSTRUCTIONS:
    - If one stage has options **range** (e.g., "1-5 mm") and the other stage has **discrete numbers** (e.g., "1 mm, 2 mm, 3 mm"), treat all discrete numbers that fall within the range as common options
    - You MUST return the common options in format **exactly as it appears in the Stage 1 list**
    - For grades like "304" and "304L", these are DIFFERENT options - treat them separately
-4. EVEN IF a common spec has ZERO common options, it MUST still be listed with an empty options column
-5. Return ALL common specifications found - do NOT limit to 2 or any other number
+5. EVEN IF a common spec has ZERO common options, it MUST still be listed with an empty options column
+6. Return ALL common specifications found - do NOT limit to 2 or any other number
 
 CRITICAL RANGE HANDLING FOR COMMON OPTIONS:
 1. If Stage 2 has a RANGE (e.g., "0.14-2.00 mm") and Stage 1 has SPECIFIC NUMBERS (e.g., "0.5 mm", "1.0 mm", "1.5 mm"):
