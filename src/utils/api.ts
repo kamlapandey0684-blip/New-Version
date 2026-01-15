@@ -104,40 +104,72 @@ async function fetchWithRetry(
   baseDelay = 10000
 ): Promise<Response> {
   let lastStatus: number | undefined;
+  let lastError: string | undefined;
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000);
-      
+
       const response = await fetch(url, {
         ...options,
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
 
       if (response.ok) return response;
 
       lastStatus = response.status;
 
-      if (response.status === 429 || response.status === 503 || response.status === 502) {
+      if (response.status === 429) {
+        const errorText = await response.text();
+        lastError = errorText;
+
         if (attempt === retries) {
-          throw new Error(`Gemini overloaded after ${retries + 1} attempts. Last status code: ${lastStatus}`);
+          const detailedError = errorText.includes('quota') || errorText.includes('QUOTA_EXCEEDED')
+            ? `Gemini API key quota exhausted. Your API has reached its usage limit. Please check your API quota at https://console.cloud.google.com/apis/dashboard`
+            : `Gemini API rate limited (429). Too many requests. Please wait a few minutes and try again.`;
+
+          console.error(`❌ ${detailedError}`);
+          throw new Error(detailedError);
         }
         const waitTime = baseDelay * Math.pow(2, attempt);
-        console.warn(`Gemini overloaded (${response.status}). Retrying in ${waitTime}ms`);
+        console.warn(`⚠️ Gemini rate limited (429). Waiting ${waitTime}ms before retry...`);
+        await sleep(waitTime);
+        continue;
+      }
+
+      if (response.status === 503 || response.status === 502) {
+        const errorText = await response.text();
+        lastError = errorText;
+
+        if (attempt === retries) {
+          const detailedError = response.status === 503
+            ? `Gemini API server is currently overloaded (503). The service is temporarily unavailable. Please try again in a few minutes.`
+            : `Gemini API gateway error (502). There's an issue with the API service. Please try again in a few minutes.`;
+
+          console.error(`❌ ${detailedError}`);
+          throw new Error(detailedError);
+        }
+        const waitTime = baseDelay * Math.pow(2, attempt);
+        console.warn(`⚠️ Gemini server overloaded (${response.status}). Waiting ${waitTime}ms before retry...`);
         await sleep(waitTime);
         continue;
       }
 
       const err = await response.text();
       throw new Error(`Gemini API error ${lastStatus}: ${err}`);
-      
+
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.message.includes('Gemini')) {
+        throw error;
+      }
+
+      if (error instanceof Error && error.name === 'AbortError') {
         console.warn(`⏱️ Request timeout on attempt ${attempt + 1}`);
         if (attempt === retries) {
-          throw new Error(`Request timed out after ${retries + 1} attempts`);
+          throw new Error(`Request timed out after ${retries + 1} attempts. The Gemini API server is not responding. Please try again later.`);
         }
         const waitTime = baseDelay * Math.pow(2, attempt);
         console.warn(`Waiting ${waitTime}ms before retry...`);
@@ -541,12 +573,22 @@ export async function auditSpecificationsWithGemini(
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
 
-    if (errorMsg.includes("429") || errorMsg.includes("quota")) {
-      console.error("Stage 1 API Key quota exhausted or rate limited");
-      throw new Error("Stage 1 API key quota exhausted. Please check your API limits.");
+    if (errorMsg.includes("quota exhausted")) {
+      console.error("❌ Gemini API key quota exhausted for Stage 1 (Audit)");
+      throw new Error("Stage 1: Gemini API key quota exhausted. Your API has reached its monthly usage limit. Please upgrade your plan or wait until the quota resets.");
     }
 
-    console.error("❌ Audit API error:", error);
+    if (errorMsg.includes("rate limited") || errorMsg.includes("429")) {
+      console.error("❌ Gemini API rate limited for Stage 1 (Audit)");
+      throw new Error("Stage 1: Too many requests to Gemini API. Please wait a few minutes and try again.");
+    }
+
+    if (errorMsg.includes("overloaded") || errorMsg.includes("503")) {
+      console.error("❌ Gemini API server overloaded for Stage 1 (Audit)");
+      throw new Error("Stage 1: Gemini API server is currently overloaded. Please try again in a few minutes.");
+    }
+
+    console.error("❌ Stage 1 Audit API error:", error);
     throw error;
   }
 }
@@ -695,12 +737,22 @@ export async function generateStage1WithGemini(
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
 
-    if (errorMsg.includes("429") || errorMsg.includes("quota")) {
-      console.error("Stage 1 API Key quota exhausted or rate limited");
-      throw new Error("Stage 1 API key quota exhausted. Please check your API limits.");
+    if (errorMsg.includes("quota exhausted")) {
+      console.error("❌ Gemini API key quota exhausted for Stage 1 (Generation)");
+      throw new Error("Stage 1: Gemini API key quota exhausted. Your API has reached its monthly usage limit. Please upgrade your plan or wait until the quota resets.");
     }
 
-    console.warn("Stage 1 API error:", error);
+    if (errorMsg.includes("rate limited") || errorMsg.includes("429")) {
+      console.error("❌ Gemini API rate limited for Stage 1 (Generation)");
+      throw new Error("Stage 1: Too many requests to Gemini API. Please wait a few minutes and try again.");
+    }
+
+    if (errorMsg.includes("overloaded") || errorMsg.includes("503")) {
+      console.error("❌ Gemini API server overloaded for Stage 1 (Generation)");
+      throw new Error("Stage 1: Gemini API server is currently overloaded. Please try again in a few minutes.");
+    }
+
+    console.warn("⚠️ Stage 1 API error (non-fatal):", error);
     return generateFallbackStage1();
   }
 }
@@ -913,12 +965,30 @@ export async function extractISQWithGemini(
     };
 
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+
+    if (errorMsg.includes("quota exhausted")) {
+      console.error("❌ Gemini API key quota exhausted for Stage 2");
+      throw new Error("Stage 2: Gemini API key quota exhausted. Your API has reached its monthly usage limit. Please upgrade your plan or wait until the quota resets.");
+    }
+
+    if (errorMsg.includes("rate limited") || errorMsg.includes("429")) {
+      console.error("❌ Gemini API rate limited for Stage 2");
+      throw new Error("Stage 2: Too many requests to Gemini API. Please wait a few minutes and try again.");
+    }
+
+    if (errorMsg.includes("overloaded") || errorMsg.includes("503") || errorMsg.includes("502")) {
+      console.error("❌ Gemini API server overloaded for Stage 2");
+      throw new Error("Stage 2: Gemini API server is currently overloaded or experiencing issues. Please try again in a few minutes.");
+    }
+
+    if (errorMsg.includes("timed out")) {
+      console.error("❌ Stage 2 request timed out");
+      throw new Error("Stage 2: Request timed out. The API took too long to respond. Please try again.");
+    }
+
     console.error("❌ Stage 2 API error:", error);
-    return {
-      config: { name: "", options: [] },
-      keys: [],
-      buyers: []
-    };
+    throw error;
   }
 }
 

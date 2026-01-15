@@ -268,9 +268,39 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {error && (
-        <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg max-w-md z-50">
-          <p className="font-semibold">Error</p>
-          <p className="text-sm">{error}</p>
+        <div className="fixed top-4 right-4 bg-red-50 border-2 border-red-400 text-red-900 px-6 py-4 rounded-lg shadow-xl max-w-md z-50">
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <p className="font-bold text-lg">Error</p>
+              <p className="text-sm mt-2 leading-relaxed">{error}</p>
+              {error.includes("quota exhausted") && (
+                <p className="text-xs mt-3 text-red-700 bg-red-100 p-2 rounded">
+                  Action: Check your API quota at console.cloud.google.com/apis/dashboard
+                </p>
+              )}
+              {error.includes("rate limited") && (
+                <p className="text-xs mt-3 text-red-700 bg-red-100 p-2 rounded">
+                  Action: Wait a few minutes before trying again
+                </p>
+              )}
+              {error.includes("overloaded") && (
+                <p className="text-xs mt-3 text-red-700 bg-red-100 p-2 rounded">
+                  Action: Try again in a few minutes. The service is temporarily unavailable.
+                </p>
+              )}
+              {error.includes("timed out") && (
+                <p className="text-xs mt-3 text-red-700 bg-red-100 p-2 rounded">
+                  Action: Check your internet connection and try again
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => setError("")}
+              className="text-red-400 hover:text-red-600 font-bold text-xl h-fit"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
 
