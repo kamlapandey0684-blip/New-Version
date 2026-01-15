@@ -1063,7 +1063,7 @@ INSTRUCTIONS:
 1. Extract all RELEVANT specifications from ALL ${urls.length} URLs provided
 2. Combine equivalent specifications and options
 3. Select 1 CONFIG specification IF FOUND (highest frequency, most price-affecting)
-4. Select AT LEAST 2 KEY specifications if they exist across URLs (up to 3 maximum)
+4. Select AT LEAST 3 KEY specifications if they exist across URLs (up to 3 maximum)
 5. Options must be the ones most repeated across URLs
 6. Maximum 10 options per CONFIG specification, 10 options per KEY specification
 7. If you cannot find enough relevant specs, output what you find (don't make up specs)
