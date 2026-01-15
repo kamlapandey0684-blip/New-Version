@@ -937,7 +937,7 @@ export async function extractISQWithGemini(
         }),
       },
       2,
-      10000
+      20000
     );
 
     const data = await response.json();
