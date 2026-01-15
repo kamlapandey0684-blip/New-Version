@@ -1026,8 +1026,7 @@ CRITICAL RELEVANCE RULES:
 3. DO NOT include specifications already in the MCAT name
 4. DO NOT include "Other" or "etc." or "N/A" options
 5. ONLY include specs that appear multiple times across URLs
-6. You MUST extract at least 3 relevant specifications if they exist across the URLs
-7. If URLs contain multiple variants (e.g., 304, 304L, 304H), include ALL of them as separate options
+6. If URLs contain multiple variants (e.g., 304, 304L, 304H), include ALL of them as separate options
 
 REPEAT VS NON-REPEAT SELECTION LOGIC (VERY IMPORTANT):
 1. Prefer specifications that appear in multiple URLs.
