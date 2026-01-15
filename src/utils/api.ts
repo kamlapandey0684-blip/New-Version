@@ -1071,6 +1071,7 @@ INSTRUCTIONS:
 7. If you cannot find enough relevant specs, output what you find (don't make up specs)
 8. Do NOT create, normalize, expand, or assume missing options.
 9. Analyze ALL URLs - do not stop after finding specs in just 1 or 2 URLs
+10. Make sure no specification has irrelevant, duplicate or overlapping options.
 
 OUTPUT FORMAT:
 
