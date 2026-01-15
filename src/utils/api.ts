@@ -730,7 +730,7 @@ async function fetchURL(url: string): Promise<string> {
     const proxyUrl = proxies[i];
     const isDirect = proxyUrl === url;
     
-    console.log(  '🔄 Attempt ${i + 1}/${proxies.length}: ${isDirect ? 'Direct' : 'Proxy'}');
+    console.log(`🔄 Attempt ${i + 1}/${proxies.length}: ${isDirect ? 'Direct' : 'Proxy'}`);
     
     try {
       const controller = new AbortController();
