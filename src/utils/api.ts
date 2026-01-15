@@ -764,7 +764,7 @@ async function fetchURL(url: string): Promise<string> {
           // Check for location header
           const redirectUrl = response.headers.get('Location');
           if (redirectUrl) {
-            console.log(  🧭 Redirecting to: ${redirectUrl});
+            console.log(  '🧭 Redirecting to: ${redirectUrl}');
             // Try fetching the redirect URL
             const redirectResponse = await fetch(redirectUrl, requestOptions);
             if (redirectResponse.ok) {
