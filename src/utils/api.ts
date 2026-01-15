@@ -930,8 +930,8 @@ export async function extractISQWithGemini(
             },
           ],
           generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 4000,
+            temperature: 0.1,
+            maxOutputTokens: 8000,
             responseMimeType: "text/plain"
           },
         }),
