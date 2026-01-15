@@ -1035,7 +1035,6 @@ REPEAT VS NON-REPEAT SELECTION LOGIC (VERY IMPORTANT):
 3. Allow non-repeated specs ONLY when they are clearly relevant.
 4. Combine options of the same specification from different URLs,
    even if exact options do not repeat.
-5. Do not copy all options from a single URL blindly.
 
 IMPORTANT RANGE HANDLING RULES:
 1. if the same specification has options in ranges in multiple URLs, use the OVERLAPPING portion only.  
