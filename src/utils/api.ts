@@ -1440,6 +1440,7 @@ CRITICAL RELEVANCE RULES:
 4. DO NOT include "Other" or "etc." or "N/A" options
 5. ONLY include specs that appear multiple times across URLs
 6. You MUST extract at least 2 relevant specifications if they exist across the URLs
+7. If URLs contain multiple variants (e.g., 304, 304L, 304H), include ALL of them as separate options
 
 IMPORTANT RANGE HANDLING RULES:
 1. If you find overlapping ranges (e.g., "0.14-2.00 mm" and "0.25-2.00 mm"), 
