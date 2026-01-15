@@ -1038,13 +1038,16 @@ REPEAT VS NON-REPEAT SELECTION LOGIC (VERY IMPORTANT):
 5. Do not copy all options from a single URL blindly.
 
 IMPORTANT RANGE HANDLING RULES:
-1. If you find overlapping ranges (e.g., "0.14-2.00 mm" and "0.25-2.00 mm"), 
-   keep only the WIDER range ("0.14-2.00 mm")
-2. If a smaller range is COMPLETELY within a larger range, use ONLY the larger range
-3. For thickness/ranges, merge overlapping ranges
-4. Example: "0.14-2.00 mm" and "0.25-2.00 mm" → keep "0.14-2.00 mm"
-5. Remove redundant ranges that are subsets of other ranges
-6. DO NOT use "Range" as a specification name. Use the actual specification name like "Thickness", "Diameter", etc.
+1. if the same specification has options in ranges in multiple URLs, use the OVERLAPPING portion only.  
+Example: URL1 "0.5–1.5 mm", URL2 "1.0–2.0 mm" → option "1.0–1.5 mm"
+
+2. If a range appears in only one URL, include it AS-IS.  
+Example: URL1 "0.3–1.0 mm", other URLs have no range → option "0.3–1.0 mm"
+
+3. Final options must NOT overlap. If two ranges overlap in final options, resolve into non-overlapping ranges using only explicit values.  
+Example: "1.4–2.5 mm" and "2.0–5.0 mm" → keep separate non-overlapping ranges
+
+4 . DO NOT use "Range" as a specification name. Use the actual specification name like "Thickness", "Diameter", etc.
 
 CONSISTENCY & DETERMINISM RULES (CRITICAL):
 1. Use ONLY information explicitly available in the provided URLs.
