@@ -907,6 +907,9 @@ export async function extractISQWithGemini(
     // NEW APPROACH: Let Gemini fetch the URLs directly
     console.log("🤖 Calling Gemini API to fetch and analyze URLs...");
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90000);
+    
     const prompt = buildISQExtractionPrompt(input, urls);
 
     const response = await fetchWithRetry(
