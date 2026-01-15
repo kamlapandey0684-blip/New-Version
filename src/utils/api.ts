@@ -942,7 +942,7 @@ export async function extractISQWithGemini(
 
     const textResponse = extractRawText(data);
     console.log("📝 Raw text response (first 800 chars):");
-    console.log(textResponse.substring(0, 800));
+    console.log(textResponse.substring(0, 1000));
 
     const parsed = parseISQFromText(textResponse);
 
