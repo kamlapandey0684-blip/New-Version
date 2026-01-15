@@ -814,7 +814,7 @@ function parseISQFromText(text: string): { config: ISQ; keys: ISQ[] } | null {
             .split(/\s*\|\s*/)
             .map(opt => opt.trim())
             .filter(opt => opt.length > 0 && isRelevantOption(opt))
-            .slice(0, 6);
+            .slice(0, 10);
 
           if (keyName && keyOptions.length > 0) {
             result.keys.push({
