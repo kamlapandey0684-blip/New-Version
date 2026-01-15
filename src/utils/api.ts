@@ -1109,7 +1109,27 @@ async function enhancedScraping(url: string): Promise<{
     return { content: '', stats };
   }
 }
-
+// Replace the existing fetchURL function with this
+async function fetchURL(url: string): Promise<string> {
+  console.log(`🔗 Enhanced fetching: ${url}`);
+  
+  try {
+    // Use the enhanced scraping function
+    const result = await enhancedScraping(url);
+    
+    // Log the scraped data
+    ScrapedDataLogger.logScrapedData(url, result.content, result.stats, result.rawHtml);
+    
+    // Show download button after scraping
+    showScrapedDataDownloadButton();
+    
+    return result.content;
+    
+  } catch (error: any) {
+    console.error(`❌ Fetch error for ${url}:`, error.message);
+    return "";
+  }
+}
 function isRelevantSpec(specName: string): boolean {
   const irrelevantSpecs = [
     'measurement system',
