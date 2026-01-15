@@ -711,84 +711,9 @@ function generateFallbackStage1(): Stage1Output {
   };
 }
 
-// ==================== CORS FIXED VERSION ====================
-
-async function fetchURL(url: string): Promise<string> {
-  console.log(`🔗 Fetching URL: ${url}`);
-  
-  const proxies = [
-    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&callback=?`,
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    `https://proxy.cors.sh/${encodeURIComponent(url)}`,
-    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-    url
-  ];
-
-  for (let i = 0; i < proxies.length; i++) {
-    const proxyUrl = proxies[i];
-    const isDirect = proxyUrl === url;
-    
-    console.log(`  🔄 Attempt ${i + 1}/${proxies.length}: ${isDirect ? 'Direct' : 'Proxy'}`);
-    
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      
-      const response = await fetch(proxyUrl, {
-        signal: controller.signal,
-        headers: !isDirect ? {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Cache-Control': 'no-cache'
-        } : {}
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        console.warn(`  ⚠️ Attempt ${i + 1} failed with status: ${response.status}`);
-        continue;
-      }
-      
-      let html = '';
-      
-      if (proxyUrl.includes('allorigins.win')) {
-        const data = await response.json();
-        html = data.contents || '';
-      } else {
-        html = await response.text();
-      }
-      
-      if (!html || html.trim().length === 0) {
-        console.warn(`  ⚠️ Attempt ${i + 1} returned empty content`);
-        continue;
-      }
-      
-      const doc = new DOMParser().parseFromString(html, "text/html");
-      const unwantedSelectors = 'script, style, noscript, iframe, nav, header, footer, aside, form, button, input, select, textarea, svg, img, video, audio, canvas';
-      doc.querySelectorAll(unwantedSelectors).forEach(el => el.remove());
-      
-      let text = doc.body?.textContent || '';
-      
-      text = text
-        .replace(/\s+/g, ' ')
-        .trim()
-        .substring(0, 2000);
-      
-      console.log(`  ✅ Success! Got ${text.length} characters`);
-      return text;
-      
-    } catch (error) {
-      console.warn(`  ⚠️ Attempt ${i + 1} error:`, error.message);
-      continue;
-    }
-  }
-  
-  console.error(`❌ All attempts failed for URL: ${url}`);
-  return "";
-}
+// ==================== NOTE: REMOVED OLD CORS APPROACH ====================
+// The old fetchURL() function has been removed.
+// Gemini now fetches and scrapes URLs directly, eliminating CORS issues.
 
 function parseISQFromText(text: string): { config: ISQ; keys: ISQ[] } | null {
   console.log("🔍 Parsing ISQ from text...");
@@ -927,39 +852,10 @@ export async function extractISQWithGemini(
   await sleep(2000);
 
   try {
-    console.log("🌐 Fetching URL contents...");
-    const urlContentsPromises = urls.map(async (url, index) => {
-      console.log(`  📡 [${index + 1}/${urls.length}] Fetching: ${url}`);
-      const content = await fetchURL(url);
-      return { url, content, index };
-    });
+    // NEW APPROACH: Let Gemini fetch the URLs directly
+    console.log("🤖 Calling Gemini API to fetch and analyze URLs...");
 
-    const results = await Promise.all(urlContentsPromises);
-
-    const urlContents: string[] = [];
-    const successfulFetches: number[] = [];
-
-    results.forEach(result => {
-      urlContents.push(result.content);
-      if (result.content && result.content.length > 0) {
-        successfulFetches.push(result.index + 1);
-      }
-    });
-
-    console.log(`📊 Fetch results: ${successfulFetches.length}/${urls.length} successful`);
-
-    if (successfulFetches.length === 0) {
-      console.warn("⚠️ No content fetched");
-      return {
-        config: { name: "", options: [] },
-        keys: [],
-        buyers: []
-      };
-    }
-
-    const prompt = buildISQExtractionPrompt(input, urls, urlContents);
-
-    console.log("🤖 Calling Gemini API...");
+    const prompt = buildISQExtractionPrompt(input, urls);
 
     const response = await fetchWithRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${STAGE2_API_KEY}`,
@@ -1028,22 +924,24 @@ export async function extractISQWithGemini(
 
 function buildISQExtractionPrompt(
   input: InputData,
-  urls: string[],
-  contents: string[]
+  urls: string[]
 ): string {
   const urlsText = urls
-    .map((url, i) => `URL ${i + 1}: ${url}\nContent: ${contents[i].substring(0, 1000)}...`)
-    .join("\n\n");
+    .map((url, i) => `${i + 1}. ${url}`)
+    .join("\n");
 
   const mcatName = input.mcats.map((m) => m.mcat_name).join(", ");
 
-  return `You are an AI that extracts ONLY RELEVANT product specifications from multiple URLs.
+  return `You are an AI that extracts ONLY RELEVANT product specifications from multiple website URLs.
 
-Extract specifications from these URLs for: ${mcatName}
+Product Category: ${mcatName}
 
-IMPORTANT: You have been provided with ${urls.length} URLs. You MUST analyze ALL ${urls.length} URLs and extract specifications that appear across them.
+IMPORTANT: You have been provided with ${urls.length} URLs below. You MUST:
+1. Access and scrape content from ALL ${urls.length} URLs
+2. Extract product specifications from the content you find
+3. Analyze specifications that appear across multiple URLs
 
-URLs:
+URLs to fetch and analyze:
 ${urlsText}
 
 CRITICAL RELEVANCE RULES:
