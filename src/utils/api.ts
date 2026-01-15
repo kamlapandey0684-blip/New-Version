@@ -1283,10 +1283,17 @@ export async function extractISQWithGemini(
   await sleep(2000);
 
   try {
-    console.log("🌐 Fetching URL contents...");
+    console.log("🌐 Enhanced scraping with data logging...");
+    
+    // Load any previously saved data
+    const savedData = ScrapedDataLogger.loadFromLocalStorage();
+    if (savedData.length > 0) {
+      console.log(`📁 Found ${savedData.length} previously scraped entries`);
+    }
+    
     const urlContentsPromises = urls.map(async (url, index) => {
-      console.log(`  📡 [${index + 1}/${urls.length}] Fetching: ${url}`);
-      const content = await fetchURL(url);
+      console.log(`  📡 [${index + 1}/${urls.length}] Enhanced scraping: ${url}`);
+      const content = await fetchURL(url); // This now uses enhanced scraping
       return { url, content, index };
     });
 
@@ -1303,9 +1310,22 @@ export async function extractISQWithGemini(
     });
 
     console.log(`📊 Fetch results: ${successfulFetches.length}/${urls.length} successful`);
+    
+    // Show detailed stats
+    const allScrapedData = ScrapedDataLogger.getAllScrapedData();
+    console.group('📈 Scraping Statistics:');
+    allScrapedData.forEach((data, idx) => {
+      console.log(`${idx + 1}. ${data.url}`);
+      console.log(`   Content: ${data.content.length} chars`);
+      console.log(`   Tables: ${data.stats.tablesFound}, Lists: ${data.stats.listsFound}`);
+      console.log(`   Has tech data: ${data.stats.hasTechnicalData ? '✅' : '❌'}`);
+      console.log(`   Keywords: ${data.stats.specKeywords.slice(0, 5).join(', ')}`);
+    });
+    console.groupEnd();
 
     if (successfulFetches.length === 0) {
-      console.warn("⚠️ No content fetched");
+      console.warn("⚠️ No content fetched from any URL");
+      alert("❌ No content could be scraped from the URLs. Check console for details.");
       return {
         config: { name: "", options: [] },
         keys: [],
@@ -1356,6 +1376,7 @@ export async function extractISQWithGemini(
 
     if (!parsed || !parsed.config || !parsed.config.name || parsed.config.options.length === 0) {
       console.warn("⚠️ No valid data extracted from Gemini");
+      alert("⚠️ Could not extract specifications from the scraped data. Check the downloaded scraped data to see what was collected.");
       return {
         config: { name: "", options: [] },
         keys: [],
@@ -1366,6 +1387,9 @@ export async function extractISQWithGemini(
     console.log(`🎉 Success! Config: ${parsed.config.name} with ${parsed.config.options.length} options`);
     console.log(`🔑 Keys: ${parsed.keys?.length || 0}`);
 
+    // Final notification
+    alert(`✅ Stage 2 complete!\n\nScraped data from ${successfulFetches.length} URLs.\nDownload button available at bottom-right.`);
+
     return {
       config: parsed.config,
       keys: parsed.keys || [],
@@ -1374,6 +1398,7 @@ export async function extractISQWithGemini(
 
   } catch (error) {
     console.error("❌ Stage 2 API error:", error);
+    alert("❌ Error during Stage 2. Check console for details.");
     return {
       config: { name: "", options: [] },
       keys: [],
