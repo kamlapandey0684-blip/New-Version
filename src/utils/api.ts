@@ -1043,7 +1043,6 @@ IMPORTANT RANGE HANDLING RULES:
 1. if the same specification has options in ranges in multiple URLs, use the OVERLAPPING portion only.  
    Example: URL1 "0.5–1.5 mm", URL2 "1.0–2.0 mm", URL3 "0.1-3mm" → option "1.0–1.5 mm"
 2. If a range appears in only one URL, include it AS-IS.  
-  Example: URL1 "0.3–1.0 mm", other URLs have no range → option "0.3–1.0 mm"
 3. Final options must NOT overlap. If two ranges overlap in final options, resolve into non-overlapping ranges using only explicit values.  
    Example: "1.4–2.5 mm" and "2.0–5.0 mm" → keep separate non-overlapping ranges
 4 . DO NOT use "Range" as a specification name. Use the actual specification name like "Thickness", "Diameter", etc.
