@@ -956,7 +956,7 @@ CRITICAL RELEVANCE RULES:
 3. DO NOT include specifications already in the MCAT name
 4. DO NOT include "Other" or "etc." or "N/A" options
 5. ONLY include specs that appear multiple times across URLs
-6. You MUST extract at least 2 relevant specifications if they exist across the URLs
+6. You MUST extract at least 3 relevant specifications if they exist across the URLs
 7. If URLs contain multiple variants (e.g., 304, 304L, 304H), include ALL of them as separate options
 
 REPEAT VS NON-REPEAT SELECTION LOGIC (VERY IMPORTANT):
@@ -977,6 +977,19 @@ IMPORTANT RANGE HANDLING RULES:
 5. Remove redundant ranges that are subsets of other ranges
 6. DO NOT use "Range" as a specification name. Use the actual specification name like "Thickness", "Diameter", etc.
 
+CONSISTENCY & DETERMINISM RULES (CRITICAL):
+1. Use ONLY information explicitly available in the provided URLs.
+2. Do NOT rely on external knowledge, assumptions, or typical industry standards.
+3. Given the SAME URLs and MCAT name, the output MUST remain the SAME across multiple runs.
+4. Select specifications and options based on:
+   - Explicit presence
+   - Clear relevance
+   - Frequency across URLs
+5. If multiple valid specs exist, prioritize them in a deterministic manner:
+   - Higher URL coverage
+   - Higher mention frequency
+   - Higher price-impact relevance
+
 INSTRUCTIONS:
 1. Extract all RELEVANT specifications from ALL ${urls.length} URLs provided
 2. Combine equivalent specifications and options
@@ -985,7 +998,7 @@ INSTRUCTIONS:
 5. Options must be the ones most repeated across URLs
 6. Maximum 10 options per CONFIG specification, 10 options per KEY specification
 7. If you cannot find enough relevant specs, output what you find (don't make up specs)
-8. CRITICAL: You MUST try to extract at least 2 relevant specifications total (1 config + at least 1 key, OR 2+ keys if no config found)
+8. Do NOT create, normalize, expand, or assume missing options.
 9. Analyze ALL URLs - do not stop after finding specs in just 1 or 2 URLs
 
 OUTPUT FORMAT:
