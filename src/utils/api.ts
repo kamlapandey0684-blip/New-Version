@@ -1042,13 +1042,10 @@ REPEAT VS NON-REPEAT SELECTION LOGIC (VERY IMPORTANT):
 IMPORTANT RANGE HANDLING RULES:
 1. If the same specification has ranges in multiple URLs, return ONLY the overlapping part
 2. Do NOT expand ranges to minimum or maximum values
-
-Do NOT split ranges into multiple parts
-
-If a range appears in only one URL, include it as-is
-
-Final output must contain non-overlapping ranges only
-4 . DO NOT use "Range" as a specification name. Use the actual specification name like "Thickness", "Diameter", etc.
+3. Do NOT split ranges into multiple parts
+4. If a range appears in only one URL, include it as-is
+5. Final output must contain non-overlapping ranges only
+6. DO NOT use "Range" as a specification name. Use the actual specification name like "Thickness", "Diameter", etc.
 
 CONSISTENCY & DETERMINISM RULES (CRITICAL):
 1. Use ONLY information explicitly available in the provided URLs.
